@@ -512,5 +512,317 @@ export const model = {
         return { dataHandles: [handle] };
       },
     },
+
+    load_pipette: {
+      description:
+        "Load a pipette on a mount. Returns the pipetteId needed by " +
+        "pick_up_tip, aspirate, and dispense.",
+      arguments: z.object({
+        runId: z.string().describe("The run id from open_run."),
+        pipetteName: z.string().describe(
+          "Engine pipette name, e.g. p50_multi_flex, p1000_single_flex.",
+        ),
+        mount: z.enum(["left", "right"]).describe("Which mount to load on."),
+      }),
+      execute: async (
+        args: { runId: string; pipetteName: string; mount: string },
+        ctx: MethodContext,
+      ): Promise<{ dataHandles: Array<{ name: string }> }> => {
+        const target = targetFrom(ctx.globalArgs);
+        const { id, status, result, elapsedMs } = await executeCommand(
+          target,
+          args.runId,
+          "loadPipette",
+          { pipetteName: args.pipetteName, mount: args.mount },
+        );
+        const pipetteId = typeof result.pipetteId === "string"
+          ? result.pipetteId
+          : id;
+        ctx.logger.info(
+          `loaded ${args.pipetteName} on ${args.mount} → ${pipetteId}`,
+        );
+        const handle = await ctx.writeResource(
+          "command",
+          `loadPipette-${id}`,
+          {
+            runId: args.runId,
+            commandType: "loadPipette",
+            params: { pipetteName: args.pipetteName, mount: args.mount },
+            commandId: id,
+            status,
+            result,
+            elapsedMs,
+            recordedAt: new Date().toISOString(),
+          },
+        );
+        return { dataHandles: [handle] };
+      },
+    },
+
+    load_labware: {
+      description:
+        "Load labware into a deck slot. Returns the labwareId needed by " +
+        "pick_up_tip, aspirate, and dispense.",
+      arguments: z.object({
+        runId: z.string().describe("The run id from open_run."),
+        labwareDefinitionUri: z.string().describe(
+          "Opentrons labware URI, e.g. opentrons/nest_12_reservoir_15ml/1, " +
+          "opentrons/nest_96_wellplate_200ul_flat/2, " +
+          "opentrons/opentrons_flex_96_tiprack_50ul/1.",
+        ),
+        slot: z.string().describe("Deck slot, e.g. C1, D2, A1."),
+      }),
+      execute: async (
+        args: { runId: string; labwareDefinitionUri: string; slot: string },
+        ctx: MethodContext,
+      ): Promise<{ dataHandles: Array<{ name: string }> }> => {
+        const target = targetFrom(ctx.globalArgs);
+        const { id, status, result, elapsedMs } = await executeCommand(
+          target,
+          args.runId,
+          "loadLabware",
+          {
+            loadName: args.labwareDefinitionUri.split("/")[1] ?? args.labwareDefinitionUri,
+            namespace: args.labwareDefinitionUri.split("/")[0] ?? "opentrons",
+            version: parseInt(args.labwareDefinitionUri.split("/")[2] ?? "1"),
+            location: { slotName: args.slot },
+          },
+        );
+        const labwareId = typeof result.labwareId === "string"
+          ? result.labwareId
+          : id;
+        ctx.logger.info(
+          `loaded ${args.labwareDefinitionUri} in slot ${args.slot} → ${labwareId}`,
+        );
+        const handle = await ctx.writeResource(
+          "command",
+          `loadLabware-${id}`,
+          {
+            runId: args.runId,
+            commandType: "loadLabware",
+            params: {
+              labwareDefinitionUri: args.labwareDefinitionUri,
+              slot: args.slot,
+            },
+            commandId: id,
+            status,
+            result,
+            elapsedMs,
+            recordedAt: new Date().toISOString(),
+          },
+        );
+        return { dataHandles: [handle] };
+      },
+    },
+
+    pick_up_tip: {
+      description: "Pick up tips from a tip rack.",
+      arguments: z.object({
+        runId: z.string().describe("The run id from open_run."),
+        pipetteId: z.string().describe("The pipetteId from load_pipette."),
+        labwareId: z.string().describe("The labwareId of the tip rack."),
+        well: z.string().default("A1").describe("Well to pick up from, e.g. A1."),
+      }),
+      execute: async (
+        args: { runId: string; pipetteId: string; labwareId: string; well: string },
+        ctx: MethodContext,
+      ): Promise<{ dataHandles: Array<{ name: string }> }> => {
+        const target = targetFrom(ctx.globalArgs);
+        const { id, status, result, elapsedMs } = await executeCommand(
+          target,
+          args.runId,
+          "pickUpTip",
+          {
+            pipetteId: args.pipetteId,
+            labwareId: args.labwareId,
+            wellName: args.well,
+            wellLocation: { origin: "top" },
+          },
+        );
+        ctx.logger.info(
+          `picked up tip from ${args.labwareId} well ${args.well}`,
+        );
+        const handle = await ctx.writeResource("command", `pickUpTip-${id}`, {
+          runId: args.runId,
+          commandType: "pickUpTip",
+          params: {
+            pipetteId: args.pipetteId,
+            labwareId: args.labwareId,
+            well: args.well,
+          },
+          commandId: id,
+          status,
+          result,
+          elapsedMs,
+          recordedAt: new Date().toISOString(),
+        });
+        return { dataHandles: [handle] };
+      },
+    },
+
+    aspirate: {
+      description: "Aspirate liquid from a well.",
+      arguments: z.object({
+        runId: z.string().describe("The run id from open_run."),
+        pipetteId: z.string().describe("The pipetteId from load_pipette."),
+        labwareId: z.string().describe("The labwareId of the source labware."),
+        well: z.string().default("A1").describe("Well to aspirate from."),
+        volume: z.number().positive().describe("Volume in µL."),
+        flowRate: z.number().positive().default(46).describe(
+          "Flow rate in µL/s. Default 46 matches p50 flex defaults.",
+        ),
+      }),
+      execute: async (
+        args: {
+          runId: string;
+          pipetteId: string;
+          labwareId: string;
+          well: string;
+          volume: number;
+          flowRate: number;
+        },
+        ctx: MethodContext,
+      ): Promise<{ dataHandles: Array<{ name: string }> }> => {
+        const target = targetFrom(ctx.globalArgs);
+        const { id, status, result, elapsedMs } = await executeCommand(
+          target,
+          args.runId,
+          "aspirate",
+          {
+            pipetteId: args.pipetteId,
+            labwareId: args.labwareId,
+            wellName: args.well,
+            wellLocation: { origin: "bottom", offset: { x: 0, y: 0, z: 1 } },
+            volume: args.volume,
+            flowRate: args.flowRate,
+          },
+        );
+        ctx.logger.info(
+          `aspirated ${args.volume} µL from ${args.labwareId} well ${args.well}`,
+        );
+        const handle = await ctx.writeResource("command", `aspirate-${id}`, {
+          runId: args.runId,
+          commandType: "aspirate",
+          params: {
+            pipetteId: args.pipetteId,
+            labwareId: args.labwareId,
+            well: args.well,
+            volume: args.volume,
+            flowRate: args.flowRate,
+          },
+          commandId: id,
+          status,
+          result,
+          elapsedMs,
+          recordedAt: new Date().toISOString(),
+        });
+        return { dataHandles: [handle] };
+      },
+    },
+
+    dispense: {
+      description: "Dispense liquid into a well.",
+      arguments: z.object({
+        runId: z.string().describe("The run id from open_run."),
+        pipetteId: z.string().describe("The pipetteId from load_pipette."),
+        labwareId: z.string().describe("The labwareId of the destination labware."),
+        well: z.string().default("A1").describe("Well to dispense into."),
+        volume: z.number().positive().describe("Volume in µL."),
+        flowRate: z.number().positive().default(46).describe(
+          "Flow rate in µL/s.",
+        ),
+      }),
+      execute: async (
+        args: {
+          runId: string;
+          pipetteId: string;
+          labwareId: string;
+          well: string;
+          volume: number;
+          flowRate: number;
+        },
+        ctx: MethodContext,
+      ): Promise<{ dataHandles: Array<{ name: string }> }> => {
+        const target = targetFrom(ctx.globalArgs);
+        const { id, status, result, elapsedMs } = await executeCommand(
+          target,
+          args.runId,
+          "dispense",
+          {
+            pipetteId: args.pipetteId,
+            labwareId: args.labwareId,
+            wellName: args.well,
+            wellLocation: { origin: "bottom", offset: { x: 0, y: 0, z: 1 } },
+            volume: args.volume,
+            flowRate: args.flowRate,
+          },
+        );
+        ctx.logger.info(
+          `dispensed ${args.volume} µL into ${args.labwareId} well ${args.well}`,
+        );
+        const handle = await ctx.writeResource("command", `dispense-${id}`, {
+          runId: args.runId,
+          commandType: "dispense",
+          params: {
+            pipetteId: args.pipetteId,
+            labwareId: args.labwareId,
+            well: args.well,
+            volume: args.volume,
+            flowRate: args.flowRate,
+          },
+          commandId: id,
+          status,
+          result,
+          elapsedMs,
+          recordedAt: new Date().toISOString(),
+        });
+        return { dataHandles: [handle] };
+      },
+    },
+
+    drop_tip: {
+      description: "Drop tips back into a labware or in the waste chute.",
+      arguments: z.object({
+        runId: z.string().describe("The run id from open_run."),
+        pipetteId: z.string().describe("The pipetteId from load_pipette."),
+        labwareId: z.string().describe("The labwareId of the tip rack."),
+        well: z.string().default("A1").describe("Well to drop tips into."),
+      }),
+      execute: async (
+        args: { runId: string; pipetteId: string; labwareId: string; well: string },
+        ctx: MethodContext,
+      ): Promise<{ dataHandles: Array<{ name: string }> }> => {
+        const target = targetFrom(ctx.globalArgs);
+        const { id, status, result, elapsedMs } = await executeCommand(
+          target,
+          args.runId,
+          "dropTip",
+          {
+            pipetteId: args.pipetteId,
+            labwareId: args.labwareId,
+            wellName: args.well,
+            wellLocation: { origin: "top" },
+          },
+        );
+        ctx.logger.info(
+          `dropped tip into ${args.labwareId} well ${args.well}`,
+        );
+        const handle = await ctx.writeResource("command", `dropTip-${id}`, {
+          runId: args.runId,
+          commandType: "dropTip",
+          params: {
+            pipetteId: args.pipetteId,
+            labwareId: args.labwareId,
+            well: args.well,
+          },
+          commandId: id,
+          status,
+          result,
+          elapsedMs,
+          recordedAt: new Date().toISOString(),
+        });
+        return { dataHandles: [handle] };
+      },
+    },
   },
 };

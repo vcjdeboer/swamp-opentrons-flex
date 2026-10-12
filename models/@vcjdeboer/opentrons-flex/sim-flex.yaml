@@ -1,0 +1,13 @@
+type: '@vcjdeboer/opentrons-flex'
+typeVersion: 2026.10.12.1
+id: a5b16c8b-c019-4eb0-9fd9-3229a9abb37c
+name: sim-flex
+version: 1
+tags: {}
+globalArguments:
+  host: localhost
+  port: 31950
+  requestTimeoutMs: 10000
+  commandSettleTimeoutMs: 120000
+  opentronsVersion: '3'
+methods: {}

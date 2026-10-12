@@ -67,15 +67,18 @@ swamp data list my-flex
 
 ## Testing with the simulator
 
-You don't need a physical robot. Opentrons ships a simulator as a Docker
-container:
+You don't need a physical robot. This repo ships a minimal simulator that
+responds to the same HTTP endpoints as the real Flex:
 
 ```bash
-docker run -d --name flex-sim -p 31950:31950 \
-  opentrons/opentrons-robot-server:latest
+# Start the simulator (runs on port 31950 by default)
+deno run --allow-net sim/fake_flex.ts
+
+# Or on a custom port
+deno run --allow-net sim/fake_flex.ts --port 8080
 ```
 
-Then point the model at it:
+Then point a model at it:
 
 ```bash
 swamp model create @vcjdeboer/opentrons-flex sim-flex \
@@ -83,10 +86,12 @@ swamp model create @vcjdeboer/opentrons-flex sim-flex \
 
 swamp model @vcjdeboer/opentrons-flex method run health sim-flex
 swamp model @vcjdeboer/opentrons-flex method run instruments sim-flex
+swamp model @vcjdeboer/opentrons-flex method run lights sim-flex --arg on=true
 ```
 
-The simulator responds to the same HTTP API as the real robot — health,
-instruments, runs, and commands all work. The provenance trail is identical.
+The simulator handles health, instruments, lights, runs, and commands. Commands
+succeed immediately — no motion, no physics — but the provenance trail in swamp
+is identical to a real robot session.
 
 ## Methods
 

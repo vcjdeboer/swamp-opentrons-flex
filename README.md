@@ -5,6 +5,9 @@ Drive an [Opentrons Flex](https://opentrons.com/flex/) robot from
 layer — health checks, instrument mounts, runs, commands — giving you a full
 provenance trail of what the robot did and when.
 
+No robot required — test against the
+[Opentrons simulator](#testing-with-the-simulator) first.
+
 ## Install
 
 ```bash
@@ -13,7 +16,7 @@ swamp extension pull @vcjdeboer/opentrons-flex
 
 ## Setup
 
-Create a model instance pointing at your robot:
+Create a model instance pointing at your robot (or simulator):
 
 ```bash
 swamp model create @vcjdeboer/opentrons-flex my-flex \
@@ -61,6 +64,29 @@ swamp data query 'model("my-flex") && spec == "command"' --select content
 # Everything the robot did
 swamp data list my-flex
 ```
+
+## Testing with the simulator
+
+You don't need a physical robot. Opentrons ships a simulator as a Docker
+container:
+
+```bash
+docker run -d --name flex-sim -p 31950:31950 \
+  opentrons/opentrons-robot-server:latest
+```
+
+Then point the model at it:
+
+```bash
+swamp model create @vcjdeboer/opentrons-flex sim-flex \
+  --set host=localhost
+
+swamp model @vcjdeboer/opentrons-flex method run health sim-flex
+swamp model @vcjdeboer/opentrons-flex method run instruments sim-flex
+```
+
+The simulator responds to the same HTTP API as the real robot — health,
+instruments, runs, and commands all work. The provenance trail is identical.
 
 ## Methods
 

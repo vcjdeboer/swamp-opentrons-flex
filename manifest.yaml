@@ -6,7 +6,7 @@ description: >
   API — health, instruments, lights, runs, commands. Every method call is
   recorded in the swamp data layer, giving you a full provenance trail of what
   the robot did and when.
-repository: 'https://github.com/vcjdeboer/opentrons-flex'
+repository: 'https://github.com/vcjdeboer/swamp-opentrons-flex'
 models:
   - opentrons_flex.ts
 workflows: []

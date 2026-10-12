@@ -1,0 +1,78 @@
+# @vcjdeboer/opentrons-flex
+
+Drive an [Opentrons Flex](https://opentrons.com/flex/) robot from
+[swamp](https://swamp-club.com). Every method call is recorded in the swamp data
+layer — health checks, instrument mounts, runs, commands — giving you a full
+provenance trail of what the robot did and when.
+
+## Install
+
+```bash
+swamp extension pull @vcjdeboer/opentrons-flex
+```
+
+## Setup
+
+Create a model instance pointing at your robot:
+
+```bash
+swamp model create @vcjdeboer/opentrons-flex my-flex \
+  --set host=192.168.1.42
+```
+
+Use the robot's IPv4 address, not a hostname — Deno's `fetch()` has no Happy
+Eyeballs, so a hostname with a blackholed IPv6 route will hang.
+
+## Usage
+
+```bash
+# Is the robot reachable?
+swamp model @vcjdeboer/opentrons-flex method run health my-flex
+
+# What's mounted?
+swamp model @vcjdeboer/opentrons-flex method run instruments my-flex
+
+# Toggle the deck lights
+swamp model @vcjdeboer/opentrons-flex method run lights my-flex --arg on=true
+
+# Open a run session (needed for commands)
+swamp model @vcjdeboer/opentrons-flex method run open_run my-flex
+
+# Home the gantry (pass the run id from open_run)
+swamp model @vcjdeboer/opentrons-flex method run home my-flex \
+  --arg runId=<run-id>
+
+# Close the run when done
+swamp model @vcjdeboer/opentrons-flex method run close_run my-flex \
+  --arg runId=<run-id>
+```
+
+## Querying the trail
+
+Every method writes to the swamp data layer. Query it:
+
+```bash
+# Latest health check
+swamp data query 'model("my-flex") && name == "health"' --select content
+
+# All commands from a run
+swamp data query 'model("my-flex") && spec == "command"' --select content
+
+# Everything the robot did
+swamp data list my-flex
+```
+
+## Methods
+
+| Method | What it does | Writes |
+|---|---|---|
+| `health` | GET /health — is the robot reachable? | `health/current` |
+| `instruments` | GET /instruments — what's mounted? | `instruments/mounted` |
+| `lights` | GET or set deck lights | `lights/current` |
+| `open_run` | POST /runs — open a run session | `run_session/<id>` |
+| `close_run` | Stop a run | `run_session/<id>` |
+| `home` | Home the gantry (needs a run) | `command/home-<id>` |
+
+## License
+
+MIT

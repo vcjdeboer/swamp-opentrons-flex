@@ -1,0 +1,21 @@
+manifestVersion: 1
+name: '@vcjdeboer/opentrons-flex'
+version: 2026.10.12.1
+description: >
+  Drive an Opentrons Flex robot from swamp. Pure HTTP against the robot's REST
+  API — health, instruments, lights, runs, commands. Every method call is
+  recorded in the swamp data layer, giving you a full provenance trail of what
+  the robot did and when.
+repository: 'https://github.com/vcjdeboer/opentrons-flex'
+models:
+  - opentrons_flex.ts
+workflows: []
+vaults: []
+drivers: []
+datastores: []
+reports: []
+additionalFiles:
+  - README.md
+  - LICENSE
+binaries: []
+dependencies: []

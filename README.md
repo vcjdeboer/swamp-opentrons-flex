@@ -56,10 +56,10 @@ Every method writes to the swamp data layer. Query it:
 
 ```bash
 # Latest health check
-swamp data query 'model("my-flex") && name == "health"' --select content
+swamp data query 'model("my-flex") && specName == "health"' --select content
 
 # All commands from a run
-swamp data query 'model("my-flex") && spec == "command"' --select content
+swamp data query 'model("my-flex") && specName == "command"' --select content
 
 # Everything the robot did
 swamp data list my-flex
@@ -97,9 +97,9 @@ is identical to a real robot session.
 
 | Method | What it does | Writes |
 |---|---|---|
-| `health` | GET /health — is the robot reachable? | `health/current` |
+| `health` | GET /health — is the robot reachable? | `health/latest` |
 | `instruments` | GET /instruments — what's mounted? | `instruments/mounted` |
-| `lights` | GET or set deck lights | `lights/current` |
+| `lights` | GET or set deck lights | `lights/latest` |
 | `open_run` | POST /runs — open a run session | `run_session/<id>` |
 | `close_run` | Stop a run | `run_session/<id>` |
 | `home` | Home the gantry (needs a run) | `command/home-<id>` |
@@ -108,7 +108,7 @@ is identical to a real robot session.
 | `pick_up_tip` | Pick up tips from a tip rack | `command/pickUpTip-<id>` |
 | `aspirate` | Aspirate liquid from a well | `command/aspirate-<id>` |
 | `dispense` | Dispense liquid into a well | `command/dispense-<id>` |
-| `drop_tip` | Drop tips back | `command/dropTip-<id>` |
+| `drop_tip` | Return tips to a tip rack | `command/dropTip-<id>` |
 
 ## License
 

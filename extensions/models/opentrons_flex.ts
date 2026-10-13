@@ -212,9 +212,18 @@ async function executeCommand(
   if (status === "failed") {
     const error = settled["error"] as Record<string, unknown> | undefined;
     throw new Error(
-      `command ${commandType} failed: ${
+      `command ${commandType} failed (run ${runId}, command ${id}): ${
         error ? JSON.stringify(error).slice(0, 400) : "no error detail"
       }`,
+    );
+  }
+
+  if (status === "queued" || status === "running") {
+    throw new Error(
+      `command ${commandType} did not settle within ${
+        t.commandSettleTimeoutMs
+      }ms (run ${runId}, command ${id}, last status '${status}'). ` +
+        `The robot may still be executing it — do not retry blindly.`,
     );
   }
 
@@ -339,7 +348,7 @@ export const model = {
           { elapsedMs: Math.round(elapsedMs) },
         );
 
-        const handle = await ctx.writeResource("health", "current", health);
+        const handle = await ctx.writeResource("health", "latest", health);
         return { dataHandles: [handle] };
       },
     },
@@ -424,7 +433,7 @@ export const model = {
           ctx.logger.info(`lights are ${lightsOn ? "on" : "off"}`);
         }
 
-        const handle = await ctx.writeResource("lights", "current", {
+        const handle = await ctx.writeResource("lights", "latest", {
           on: lightsOn,
           observedAt: new Date().toISOString(),
         });
@@ -781,7 +790,7 @@ export const model = {
     },
 
     drop_tip: {
-      description: "Drop tips back into a labware or in the waste chute.",
+      description: "Return tips to a loaded tip rack.",
       arguments: z.object({
         runId: z.string().describe("The run id from open_run."),
         pipetteId: z.string().describe("The pipetteId from load_pipette."),

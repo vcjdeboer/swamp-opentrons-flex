@@ -348,7 +348,7 @@ export const model = {
           { elapsedMs: Math.round(elapsedMs) },
         );
 
-        const handle = await ctx.writeResource("health", "latest", health);
+        const handle = await ctx.writeResource("health", "health-current", health);
         return { dataHandles: [handle] };
       },
     },
@@ -433,7 +433,7 @@ export const model = {
           ctx.logger.info(`lights are ${lightsOn ? "on" : "off"}`);
         }
 
-        const handle = await ctx.writeResource("lights", "latest", {
+        const handle = await ctx.writeResource("lights", "lights-current", {
           on: lightsOn,
           observedAt: new Date().toISOString(),
         });

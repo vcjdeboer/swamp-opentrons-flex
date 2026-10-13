@@ -1,0 +1,13 @@
+type: '@vcjdeboer/opentrons-flex'
+typeVersion: 2026.10.12.1
+id: 7fec3abb-5f91-4376-a560-590721bbea83
+name: lab-flex
+version: 1
+tags: {}
+globalArguments:
+  host: 169.254.99.87
+  port: 31950
+  requestTimeoutMs: 10000
+  commandSettleTimeoutMs: 120000
+  opentronsVersion: '3'
+methods: {}

@@ -97,9 +97,9 @@ is identical to a real robot session.
 
 | Method | What it does | Writes |
 |---|---|---|
-| `health` | GET /health — is the robot reachable? | `health/latest` |
+| `health` | GET /health — is the robot reachable? | `health/health-current` |
 | `instruments` | GET /instruments — what's mounted? | `instruments/mounted` |
-| `lights` | GET or set deck lights | `lights/latest` |
+| `lights` | GET or set deck lights | `lights/lights-current` |
 | `open_run` | POST /runs — open a run session | `run_session/<id>` |
 | `close_run` | Stop a run | `run_session/<id>` |
 | `home` | Home the gantry (needs a run) | `command/home-<id>` |

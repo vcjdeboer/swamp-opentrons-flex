@@ -1,8 +1,8 @@
 id: eba1e546-98c0-4d33-b607-d57ce894f7b1
 name: flex-transfer
 description: >
-  Transfer liquid across three columns of a 96-well plate.
-  Picks up tips once, aspirates and dispenses three times (A1→A1, A1→A2, A1→A3),
+  Transfer liquid across four columns of a 96-well plate.
+  Picks up tips once, aspirates and dispenses four times (A1→A1, A1→A2, A1→A3, A1→A4),
   then trashes the tips and homes.
 version: 1
 tags: {}
@@ -121,7 +121,7 @@ jobs:
         dependsOn: []
 
       - name: aspirate-col1
-        description: Aspirate 30 µL from reservoir A1
+        description: Aspirate 50 µL from reservoir A1
         dependsOn:
           - step: pick-up-tips
             condition:
@@ -138,10 +138,10 @@ jobs:
             labwareId: >-
               ${{ data.latest("lab-flex", "labware-C1").?attributes.?result.?labwareId.orValue("") }}
             well: A1
-            volume: 30
+            volume: 50
 
       - name: dispense-col1
-        description: Dispense 30 µL into plate column 1
+        description: Dispense 50 µL into plate column 1
         dependsOn:
           - step: aspirate-col1
             condition:
@@ -158,10 +158,10 @@ jobs:
             labwareId: >-
               ${{ data.latest("lab-flex", "labware-D2").?attributes.?result.?labwareId.orValue("") }}
             well: A1
-            volume: 30
+            volume: 50
 
       - name: aspirate-col2
-        description: Aspirate 30 µL from reservoir A1
+        description: Aspirate 50 µL from reservoir A1
         dependsOn:
           - step: dispense-col1
             condition:
@@ -178,10 +178,10 @@ jobs:
             labwareId: >-
               ${{ data.latest("lab-flex", "labware-C1").?attributes.?result.?labwareId.orValue("") }}
             well: A1
-            volume: 30
+            volume: 50
 
       - name: dispense-col2
-        description: Dispense 30 µL into plate column 2
+        description: Dispense 50 µL into plate column 2
         dependsOn:
           - step: aspirate-col2
             condition:
@@ -198,10 +198,10 @@ jobs:
             labwareId: >-
               ${{ data.latest("lab-flex", "labware-D2").?attributes.?result.?labwareId.orValue("") }}
             well: A2
-            volume: 30
+            volume: 50
 
       - name: aspirate-col3
-        description: Aspirate 30 µL from reservoir A1
+        description: Aspirate 50 µL from reservoir A1
         dependsOn:
           - step: dispense-col2
             condition:
@@ -218,10 +218,10 @@ jobs:
             labwareId: >-
               ${{ data.latest("lab-flex", "labware-C1").?attributes.?result.?labwareId.orValue("") }}
             well: A1
-            volume: 30
+            volume: 50
 
       - name: dispense-col3
-        description: Dispense 30 µL into plate column 3
+        description: Dispense 50 µL into plate column 3
         dependsOn:
           - step: aspirate-col3
             condition:
@@ -238,12 +238,52 @@ jobs:
             labwareId: >-
               ${{ data.latest("lab-flex", "labware-D2").?attributes.?result.?labwareId.orValue("") }}
             well: A3
-            volume: 30
+            volume: 50
+
+      - name: aspirate-col4
+        description: Aspirate 50 µL from reservoir A1
+        dependsOn:
+          - step: dispense-col3
+            condition:
+              type: succeeded
+        task:
+          type: model_method
+          modelIdOrName: lab-flex
+          methodName: aspirate
+          inputs:
+            runId: >-
+              ${{ data.latest("lab-flex", "session").?attributes.?runId.orValue("") }}
+            pipetteId: >-
+              ${{ data.latest("lab-flex", "pipette").?attributes.?result.?pipetteId.orValue("") }}
+            labwareId: >-
+              ${{ data.latest("lab-flex", "labware-C1").?attributes.?result.?labwareId.orValue("") }}
+            well: A1
+            volume: 50
+
+      - name: dispense-col4
+        description: Dispense 50 µL into plate column 4
+        dependsOn:
+          - step: aspirate-col4
+            condition:
+              type: succeeded
+        task:
+          type: model_method
+          modelIdOrName: lab-flex
+          methodName: dispense
+          inputs:
+            runId: >-
+              ${{ data.latest("lab-flex", "session").?attributes.?runId.orValue("") }}
+            pipetteId: >-
+              ${{ data.latest("lab-flex", "pipette").?attributes.?result.?pipetteId.orValue("") }}
+            labwareId: >-
+              ${{ data.latest("lab-flex", "labware-D2").?attributes.?result.?labwareId.orValue("") }}
+            well: A4
+            volume: 50
 
       - name: trash-tips
         description: Eject tips into trash
         dependsOn:
-          - step: dispense-col3
+          - step: dispense-col4
             condition:
               type: succeeded
         task:

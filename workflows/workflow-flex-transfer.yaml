@@ -1,5 +1,5 @@
 id: eba1e546-98c0-4d33-b607-d57ce894f7b1
-name: flex-transfer
+name: '@vcjdeboer/opentrons-flex/flex-transfer'
 description: >
   Transfer liquid across four columns of a 96-well plate.
   Picks up tips once, aspirates and dispenses four times (A1→A1, A1→A2, A1→A3, A1→A4),

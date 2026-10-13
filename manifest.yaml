@@ -9,7 +9,8 @@ description: >
 repository: 'https://github.com/vcjdeboer/swamp-opentrons-flex'
 models:
   - opentrons_flex.ts
-workflows: []
+workflows:
+  - workflow-flex-transfer.yaml
 vaults: []
 drivers: []
 datastores: []

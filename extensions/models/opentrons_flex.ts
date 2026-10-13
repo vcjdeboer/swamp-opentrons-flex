@@ -462,7 +462,7 @@ export const model = {
           createdAt: new Date().toISOString(),
         };
         ctx.logger.info(`run ${runId} opened`);
-        const handle = await ctx.writeResource("run_session", runId, session);
+        const handle = await ctx.writeResource("run_session", "session", session);
         return { dataHandles: [handle] };
       },
     },
@@ -481,10 +481,10 @@ export const model = {
           data: { actionType: "stop" },
         });
         ctx.logger.info(`run ${args.runId} closed`);
-        const handle = await ctx.writeResource("run_session", args.runId, {
+        const handle = await ctx.writeResource("run_session", "session", {
           runId: args.runId,
           url: `${baseUrl(target)}/runs/${args.runId}`,
-          createdAt: new Date().toISOString(),
+          closedAt: new Date().toISOString(),
         });
         return { dataHandles: [handle] };
       },
@@ -552,7 +552,7 @@ export const model = {
         );
         const handle = await ctx.writeResource(
           "command",
-          `loadPipette-${id}`,
+          "pipette",
           {
             runId: args.runId,
             commandType: "loadPipette",
@@ -605,7 +605,7 @@ export const model = {
         );
         const handle = await ctx.writeResource(
           "command",
-          `loadLabware-${id}`,
+          `labware-${args.slot}`,
           {
             runId: args.runId,
             commandType: "loadLabware",

@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/swamp-flex-logo.png" alt="Swamp Flex" width="280">
+</p>
+
 # @vcjdeboer/opentrons-flex
 
 Drive an [Opentrons Flex](https://opentrons.com/flex/) robot from

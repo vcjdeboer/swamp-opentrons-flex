@@ -5,9 +5,9 @@
  * the swamp data layer — health checks, instrument mounts, runs, commands —
  * giving you a full provenance trail of what the robot did and when.
  *
- * No FFI, no holder, no spawned process. The Flex's session identity is a
- * value (a run id string), not a handle, so it survives between method calls
- * in the data layer.
+ * No FFI, no background process. The Flex's session identity is a value
+ * (a run id string), not a handle, so it survives between method calls in
+ * the data layer.
  *
  * @module
  */

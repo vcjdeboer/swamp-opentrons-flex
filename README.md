@@ -103,6 +103,12 @@ is identical to a real robot session.
 | `open_run` | POST /runs — open a run session | `run_session/<id>` |
 | `close_run` | Stop a run | `run_session/<id>` |
 | `home` | Home the gantry (needs a run) | `command/home-<id>` |
+| `load_pipette` | Load a pipette on a mount | `command/loadPipette-<id>` |
+| `load_labware` | Load labware into a deck slot | `command/loadLabware-<id>` |
+| `pick_up_tip` | Pick up tips from a tip rack | `command/pickUpTip-<id>` |
+| `aspirate` | Aspirate liquid from a well | `command/aspirate-<id>` |
+| `dispense` | Dispense liquid into a well | `command/dispense-<id>` |
+| `drop_tip` | Drop tips back | `command/dropTip-<id>` |
 
 ## License
 

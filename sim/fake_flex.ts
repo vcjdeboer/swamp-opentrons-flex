@@ -10,7 +10,7 @@
  *   deno run --allow-net sim/fake_flex.ts [--port 31950]
  *
  * Then point a swamp model at localhost:
- *   swamp model create @vcjdeboer/opentrons-flex sim-flex --set host=localhost
+ *   swamp model create @vcjdeboer/opentrons-flex sim-flex --global-arg host=localhost
  *   swamp model @vcjdeboer/opentrons-flex method run health sim-flex
  *
  * @module

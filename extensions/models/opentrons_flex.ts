@@ -810,7 +810,6 @@ export const model = {
             pipetteId: args.pipetteId,
             labwareId: args.labwareId,
             wellName: args.well,
-            wellLocation: { origin: "top" },
           },
         );
         ctx.logger.info(

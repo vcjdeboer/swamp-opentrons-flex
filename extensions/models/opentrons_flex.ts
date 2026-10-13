@@ -220,9 +220,7 @@ async function executeCommand(
 
   if (status === "queued" || status === "running") {
     throw new Error(
-      `command ${commandType} did not settle within ${
-        t.commandSettleTimeoutMs
-      }ms (run ${runId}, command ${id}, last status '${status}'). ` +
+      `command ${commandType} did not settle within ${t.commandSettleTimeoutMs}ms (run ${runId}, command ${id}, last status '${status}'). ` +
         `The robot may still be executing it — do not retry blindly.`,
     );
   }
@@ -348,7 +346,11 @@ export const model = {
           { elapsedMs: Math.round(elapsedMs) },
         );
 
-        const handle = await ctx.writeResource("health", "health-current", health);
+        const handle = await ctx.writeResource(
+          "health",
+          "health-current",
+          health,
+        );
         return { dataHandles: [handle] };
       },
     },
@@ -462,7 +464,11 @@ export const model = {
           createdAt: new Date().toISOString(),
         };
         ctx.logger.info(`run ${runId} opened`);
-        const handle = await ctx.writeResource("run_session", "session", session);
+        const handle = await ctx.writeResource(
+          "run_session",
+          "session",
+          session,
+        );
         return { dataHandles: [handle] };
       },
     },
@@ -576,8 +582,8 @@ export const model = {
         runId: z.string().describe("The run id from open_run."),
         labwareDefinitionUri: z.string().describe(
           "Opentrons labware URI, e.g. opentrons/nest_12_reservoir_15ml/1, " +
-          "opentrons/nest_96_wellplate_200ul_flat/2, " +
-          "opentrons/opentrons_flex_96_tiprack_50ul/1.",
+            "opentrons/nest_96_wellplate_200ul_flat/2, " +
+            "opentrons/opentrons_flex_96_tiprack_50ul/1.",
         ),
         slot: z.string().describe("Deck slot, e.g. C1, D2, A1."),
       }),
@@ -591,7 +597,8 @@ export const model = {
           args.runId,
           "loadLabware",
           {
-            loadName: args.labwareDefinitionUri.split("/")[1] ?? args.labwareDefinitionUri,
+            loadName: args.labwareDefinitionUri.split("/")[1] ??
+              args.labwareDefinitionUri,
             namespace: args.labwareDefinitionUri.split("/")[0] ?? "opentrons",
             version: parseInt(args.labwareDefinitionUri.split("/")[2] ?? "1"),
             location: { slotName: args.slot },
@@ -630,10 +637,17 @@ export const model = {
         runId: z.string().describe("The run id from open_run."),
         pipetteId: z.string().describe("The pipetteId from load_pipette."),
         labwareId: z.string().describe("The labwareId of the tip rack."),
-        well: z.string().default("A1").describe("Well to pick up from, e.g. A1."),
+        well: z.string().default("A1").describe(
+          "Well to pick up from, e.g. A1.",
+        ),
       }),
       execute: async (
-        args: { runId: string; pipetteId: string; labwareId: string; well: string },
+        args: {
+          runId: string;
+          pipetteId: string;
+          labwareId: string;
+          well: string;
+        },
         ctx: MethodContext,
       ): Promise<{ dataHandles: Array<{ name: string }> }> => {
         const target = targetFrom(ctx.globalArgs);
@@ -733,7 +747,9 @@ export const model = {
       arguments: z.object({
         runId: z.string().describe("The run id from open_run."),
         pipetteId: z.string().describe("The pipetteId from load_pipette."),
-        labwareId: z.string().describe("The labwareId of the destination labware."),
+        labwareId: z.string().describe(
+          "The labwareId of the destination labware.",
+        ),
         well: z.string().default("A1").describe("Well to dispense into."),
         volume: z.number().positive().describe("Volume in µL."),
         flowRate: z.number().positive().default(46).describe(
@@ -797,7 +813,12 @@ export const model = {
         well: z.string().default("A1").describe("Well to drop tips into."),
       }),
       execute: async (
-        args: { runId: string; pipetteId: string; labwareId: string; well: string },
+        args: {
+          runId: string;
+          pipetteId: string;
+          labwareId: string;
+          well: string;
+        },
         ctx: MethodContext,
       ): Promise<{ dataHandles: Array<{ name: string }> }> => {
         const target = targetFrom(ctx.globalArgs);

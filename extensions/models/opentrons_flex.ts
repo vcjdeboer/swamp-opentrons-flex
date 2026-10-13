@@ -831,5 +831,67 @@ export const model = {
         return { dataHandles: [handle] };
       },
     },
+    trash_tip: {
+      description:
+        "Eject tips into the trash bin. Moves to the trash area and drops " +
+        "in place, alternating position each time.",
+      arguments: z.object({
+        runId: z.string().describe("The run id from open_run."),
+        pipetteId: z.string().describe("The pipetteId from load_pipette."),
+        trashArea: z.string().default("movableTrashA3").describe(
+          "Addressable area name for the trash. Default is movableTrashA3.",
+        ),
+      }),
+      execute: async (
+        args: { runId: string; pipetteId: string; trashArea: string },
+        ctx: MethodContext,
+      ): Promise<{ dataHandles: Array<{ name: string }> }> => {
+        const target = targetFrom(ctx.globalArgs);
+        const t0 = performance.now();
+
+        const move = await executeCommand(
+          target,
+          args.runId,
+          "moveToAddressableAreaForDropTip",
+          {
+            pipetteId: args.pipetteId,
+            addressableAreaName: args.trashArea,
+            alternateDropLocation: true,
+          },
+        );
+
+        const drop = await executeCommand(
+          target,
+          args.runId,
+          "dropTipInPlace",
+          { pipetteId: args.pipetteId },
+        );
+
+        const elapsedMs = performance.now() - t0;
+        ctx.logger.info(
+          `trashed tips in ${args.trashArea} (${Math.round(elapsedMs)}ms)`,
+        );
+        const handle = await ctx.writeResource(
+          "command",
+          `trashTip-${drop.id}`,
+          {
+            runId: args.runId,
+            commandType: "trashTip",
+            params: {
+              pipetteId: args.pipetteId,
+              trashArea: args.trashArea,
+              moveCommandId: move.id,
+              dropCommandId: drop.id,
+            },
+            commandId: drop.id,
+            status: drop.status,
+            result: drop.result,
+            elapsedMs,
+            recordedAt: new Date().toISOString(),
+          },
+        );
+        return { dataHandles: [handle] };
+      },
+    },
   },
 };

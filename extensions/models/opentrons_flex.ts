@@ -275,7 +275,7 @@ interface MethodContext {
 /** Model definition for driving an Opentrons Flex robot. */
 export const model = {
   type: "@vcjdeboer/opentrons-flex",
-  version: "2026.10.12.1",
+  version: "2026.10.14.1",
   globalArguments: GlobalArgsSchema,
   resources: {
     "health": {

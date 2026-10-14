@@ -1,6 +1,6 @@
 manifestVersion: 1
 name: '@vcjdeboer/opentrons-flex'
-version: 2026.10.12.1
+version: 2026.10.14.1
 description: >
   Drive an Opentrons Flex robot from swamp. Pure HTTP against the robot's REST
   API — health, instruments, lights, runs, commands. Every method call is

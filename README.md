@@ -24,7 +24,7 @@ Create a model instance pointing at your robot (or simulator):
 
 ```bash
 swamp model create @vcjdeboer/opentrons-flex my-flex \
-  --global-arg host=192.168.1.42
+  --global-arg host=198.51.100.1
 ```
 
 Use the robot's IPv4 address, not a hostname — Deno's `fetch()` has no Happy
